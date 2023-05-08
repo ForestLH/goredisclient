@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"goredisclient/ComparePikaRedis"
 	"strconv"
 	"sync"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func getStrings(prefix string, length int) []string {
@@ -26,6 +27,7 @@ func Parallel(comp *ComparePikaRedis.Comparator) {
 	cmdcot := 6
 
 	for k := 1; k < cmdcot; k++ {
+		comp.Pipeline()
 		key := fmt.Sprintf("list%d", k)
 		vals := getStrings(key, 500)
 		comp.AddCmd("LPush", key, vals)
@@ -47,7 +49,7 @@ func main() {
 
 	ctx := context.Background()
 	comp.Init(pikaClient, redisClient, &ctx)
-	threadnumber := 100
+	threadnumber := 1000
 	wg.Add(threadnumber)
 	for i := 0; i < threadnumber; i++ {
 		go Parallel(&comp)

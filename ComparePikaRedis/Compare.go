@@ -3,8 +3,9 @@ package ComparePikaRedis
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func Hello() {
@@ -16,15 +17,21 @@ func init() {
 }
 
 type Comparator struct {
+	pika          *redis.Client
+	redis         *redis.Client
 	pikaPipeline  redis.Pipeliner
 	redisPipeline redis.Pipeliner
 	context       *context.Context
 }
 
 func (comp *Comparator) Init(pika, redis *redis.Client, context *context.Context) {
-	comp.pikaPipeline = pika.Pipeline()
-	comp.redisPipeline = redis.Pipeline()
+	comp.pika = pika
+	comp.redis = redis
 	comp.context = context
+}
+func (comp *Comparator) Pipeline() {
+	comp.pikaPipeline = comp.pika.Pipeline()
+	comp.redisPipeline = comp.redis.Pipeline()
 }
 
 func (comp *Comparator) AddCmd(functioname string, key string, values ...interface{}) {
